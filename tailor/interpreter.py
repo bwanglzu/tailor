@@ -1,9 +1,9 @@
-from typing import List, Optional
+from typing import List, Optional, Tuple, Union
 
-from torch import Tensor
+import torch
 from torch.fx import GraphModule, Tracer
 from torch.fx.passes.shape_prop import ShapeProp as ShapeInterpreter
-from torch.nn.modules import Module
+from torch.nn import Module
 
 from ._symbolic_trace import symbolic_trace_with_custom_tracer
 from .tracer import ModuleNodeTracer
@@ -18,9 +18,13 @@ class Interpreter(VisualizerMixin):
         self.visualizer = VisualizerMixin()
 
     def interpret(
-        self, module: Module, input_: Tensor, skip_call_function: bool = True
+        self,
+        module: Module,
+        input_shape: Union[list, tuple],
+        skip_call_function: bool = True,
     ) -> List[dict]:
         rv = []
+        input_ = torch.randn(input_shape)
         name_module_mapping = get_named_modules_mapping(module)
         traced: GraphModule = symbolic_trace_with_custom_tracer(
             module, tracer=self.tracer
@@ -41,9 +45,12 @@ class Interpreter(VisualizerMixin):
                 item['trainable'] = trainable
                 tensor_meta = node.meta.get('tensor_meta')
                 # if node.op is `call_function`, do not have tensor meta.
-                if tensor_meta:
+                if tensor_meta and isinstance(tensor_meta, dict):
                     item['dtype'] = tensor_meta.dtype
-                    item['shape'] = str(tuple(tensor_meta.shape))
+                    item['shape'] = list(tensor_meta.shape)
+                elif isinstance(tensor_meta, torch.fx.passes.shape_prop.TensorMetadata):
+                    item['dtype'] = tensor_meta.dtype
+                    item['shape'] = list(tensor_meta.shape)
                 else:
                     item['dtype'] = 'unknown'
                     item['shape'] = 'unknown'

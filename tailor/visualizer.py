@@ -1,9 +1,8 @@
-from typing import List
+from typing import Union
 
-import torch.nn as nn
+import torch
 from rich.console import Console
 from rich.table import Table
-from torch import Tensor
 
 
 class VisualizerMixin(object):
@@ -25,10 +24,10 @@ class VisualizerMixin(object):
             'trainable', justify='right', style='green3', no_wrap=True
         )
 
-    def plot(self, module: nn.Module, input_: Tensor):
+    def plot(self, module: torch.nn.Module, input_shape: Union[list, tuple]):
         self._table_name = f'Model Structure: {module.__class__.__name__}'
         self._table.title = self._table_name
-        for summary in self.interpret(module=module, input_=input_):
+        for summary in self.interpret(module=module, input_shape=input_shape):
             self._table.add_row(
                 summary['name'],
                 str(summary['dtype']),

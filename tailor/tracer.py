@@ -1,5 +1,6 @@
 from typing import Any, Callable, Dict, Optional, Tuple, Union
 
+import torch
 import torch.fx.proxy
 from torch.fx import Node, Proxy, Tracer
 from torch.fx.node import Target

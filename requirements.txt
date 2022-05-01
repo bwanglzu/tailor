@@ -1,2 +1,2 @@
-torch
-rich
+torch==1.11.0
+rich==12.3.0
