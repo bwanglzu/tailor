@@ -1,6 +1,5 @@
 from typing import Union
 
-import torch
 from rich.console import Console
 from rich.table import Table
 
@@ -24,10 +23,10 @@ class VisualizerMixin(object):
             'trainable', justify='right', style='green3', no_wrap=True
         )
 
-    def plot(self, module: torch.nn.Module, input_shape: Union[list, tuple]):
-        self._table_name = f'Model Structure: {module.__class__.__name__}'
+    def plot(self, input_shape: Union[list, tuple]):
+        self._table_name = f'Model Structure: {self._model.__class__.__name__}'
         self._table.title = self._table_name
-        for summary in self.interpret(module=module, input_shape=input_shape):
+        for summary in self._interpret(input_shape=input_shape):
             self._table.add_row(
                 summary['name'],
                 str(summary['dtype']),

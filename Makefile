@@ -94,7 +94,7 @@ PYTEST_ARGS = --show-capture no --full-trace --verbose --cov tailor/ --cov-repor
 
 ## Run tests
 test:
-	pytest -m  $(PYTEST_ARGS) $(TESTS_PATH)
+	pytest $(TESTS_PATH) $(PYTEST_ARGS)
 
 # ---------------------------------------------------------- Code style related targets
 

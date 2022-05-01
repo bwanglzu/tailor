@@ -1,1 +1,1 @@
-from .interpreter import Interpreter
+from .tailor import Tailor
