@@ -1,6 +1,6 @@
 from typing import Any, Callable, Dict, Optional, Tuple, Union
 
-from torch.fx import Node, Tracer
+from torch.fx import Node, Proxy, Tracer
 from torch.fx.node import Target
 from torch.nn import Module
 
@@ -51,9 +51,9 @@ class ModuleNodeTracer(Tracer):
         name: Optional[str] = None,
         type_expr: Optional[Any] = None,
     ) -> Node:
-        if kind == 'call_module':
-            node = super().create_node(kind, target, args, kwargs, name)
-            return node
+        # if kind == 'call_module':
+        node = super().create_node(kind, target, args, kwargs, name)
+        return node
 
     def get_module_name_by_node(self, node: Node):
         return self.node_to_originating_module.get(node, None)
