@@ -1,15 +1,16 @@
 # Tailor
 
 ```python
-from tailor import Interpreter
+from tailor import Tailor
 from torchvision.models import alexnet
 
 model = alexnet()
 
-interpreter = Interpreter()
-interpreter.plot(module=model, input_shape=(1, 3, 224, 224))
+tailor = Tailor()
+tailor.plot(module=model, input_shape=(1, 3, 224, 224))
 
-                          Model Structure: AlexNet                          
+Model
+Structure: AlexNet
 ┏━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━┓
 ┃         name ┃         dtype ┃ num_params ┃            shape ┃ trainable ┃
 ┡━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━┩

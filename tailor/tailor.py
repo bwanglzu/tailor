@@ -11,7 +11,7 @@ from .utils import count_module_parameters, get_named_modules_mapping
 from .visualizer import VisualizerMixin
 
 
-class Interpreter(VisualizerMixin):
+class Tailor(VisualizerMixin):
     def __init__(self, tracer: Optional[Tracer] = None):
         super().__init__()
         self._tracer = tracer if tracer else ModuleNodeTracer()
@@ -25,7 +25,7 @@ class Interpreter(VisualizerMixin):
             )
         return self._graph_module
 
-    def interpret(
+    def _interpret(
         self,
         module: Module,
         input_shape: Union[list, tuple],
