@@ -1,6 +1,6 @@
 # Tailor
 
-#### 1. Plot the model structure.
+#### Plot the model structure.
 ```python
 from tailor import Tailor
 from torchvision.models import alexnet
