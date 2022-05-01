@@ -1,6 +1,8 @@
 # Tailor
 
-#### 1. Plot the model structure.
+#### Plot the model structure.
+
+
 ```python
 from tailor import Tailor
 from torchvision.models import alexnet
@@ -73,3 +75,5 @@ tailor.plot(input_shape=(1, 3, 224, 224))
 │ classifier.6 │ torch.float32 │    4097000 │        [1, 1000] │      True │
 └──────────────┴───────────────┴────────────┴──────────────────┴───────────┘
 ```
+
+#### Layer Manipulation

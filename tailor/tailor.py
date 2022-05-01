@@ -6,13 +6,14 @@ from torch.fx.passes.shape_prop import ShapeProp as ShapeInterpreter
 
 from ._symbolic_trace import symbolic_trace_with_custom_tracer
 from .freezer import FreezerMixin
+from .rewriter import SublayerRewriter
 from .tracer import ModuleNodeTracer
 from .utils import (count_module_parameters, get_named_modules_mapping,
                     get_named_parameters_mapping)
 from .visualizer import VisualizerMixin
 
 
-class Tailor(VisualizerMixin, FreezerMixin):
+class Tailor(VisualizerMixin, FreezerMixin, SublayerRewriter):
     def __init__(self, model: torch.nn.Module, tracer: Optional[Tracer] = None):
         super().__init__()
         self._model = model
