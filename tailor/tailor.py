@@ -3,38 +3,35 @@ from typing import List, Optional, Union
 import torch
 from torch.fx import GraphModule, Tracer
 from torch.fx.passes.shape_prop import ShapeProp as ShapeInterpreter
-from torch.nn import Module
 
 from ._symbolic_trace import symbolic_trace_with_custom_tracer
+from .freezer import FreezerMixin
 from .tracer import ModuleNodeTracer
-from .utils import count_module_parameters, get_named_modules_mapping
+from .utils import (count_module_parameters, get_named_modules_mapping,
+                    get_named_parameters_mapping)
 from .visualizer import VisualizerMixin
 
 
-class Tailor(VisualizerMixin):
-    def __init__(self, tracer: Optional[Tracer] = None):
+class Tailor(VisualizerMixin, FreezerMixin):
+    def __init__(self, model: torch.nn.Module, tracer: Optional[Tracer] = None):
         super().__init__()
+        self._model = model
         self._tracer = tracer if tracer else ModuleNodeTracer()
         self.visualizer = VisualizerMixin()
-        self._graph_module = None
 
-    def trace(self, module: torch.nn.Module) -> GraphModule:
-        if not self._graph_module:
-            self._graph_module = symbolic_trace_with_custom_tracer(
-                root=module, tracer=self._tracer
-            )
-        return self._graph_module
+    def trace(self) -> GraphModule:
+        return symbolic_trace_with_custom_tracer(root=self._model, tracer=self._tracer)
 
     def _interpret(
         self,
-        module: Module,
         input_shape: Union[list, tuple],
         skip_call_function: bool = True,
     ) -> List[dict]:
         rv = []
         input_ = torch.randn(input_shape)
-        name_module_mapping = get_named_modules_mapping(module)
-        traced = self.trace(module)
+        name_module_mapping = get_named_modules_mapping(self._model)
+        name_params_mapping = get_named_parameters_mapping(self._model)
+        traced = self.trace()
         self.shape_interpreter = ShapeInterpreter(traced)
         self.shape_interpreter.propagate(input_)
         for node in traced.graph.nodes:
@@ -44,9 +41,16 @@ class Tailor(VisualizerMixin):
             if module_name and name_module_mapping.get(module_name):
                 item = {}
                 current_module = name_module_mapping[module_name]
+                current_params = name_params_mapping.get(module_name)
                 num_params = count_module_parameters(current_module)
-                trainable = True if num_params > 0 else False
-                item['name'] = node.name
+                trainable = (
+                    True
+                    if num_params > 0
+                    and current_params is not None
+                    and current_params.requires_grad
+                    else False
+                )
+                item['name'] = module_name
                 item['num_params'] = num_params
                 item['trainable'] = trainable
                 tensor_meta = node.meta.get('tensor_meta')
@@ -62,3 +66,7 @@ class Tailor(VisualizerMixin):
                     item['shape'] = 'unknown'
                 rv.append(item)
         return rv
+
+    @property
+    def model(self):
+        return self._model
