@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from torch import Tensor
 from torch.fx import GraphModule, Tracer
@@ -6,8 +6,8 @@ from torch.fx.passes.shape_prop import ShapeProp as ShapeInterpreter
 from torch.nn.modules import Module
 
 from ._symbolic_trace import symbolic_trace_with_custom_tracer
-from .module import count_module_parameters, get_named_modules_mapping
 from .tracer import ModuleNodeTracer
+from .utils import count_module_parameters, get_named_modules_mapping
 from .visualizer import VisualizerMixin
 
 
@@ -17,7 +17,9 @@ class Interpreter(VisualizerMixin):
         self.tracer = tracer if tracer else ModuleNodeTracer()
         self.visualizer = VisualizerMixin()
 
-    def interpret(self, module: Module, input_: Tensor):
+    def interpret(
+        self, module: Module, input_: Tensor, skip_call_function: bool = True
+    ) -> List[dict]:
         rv = []
         name_module_mapping = get_named_modules_mapping(module)
         traced: GraphModule = symbolic_trace_with_custom_tracer(
@@ -26,6 +28,8 @@ class Interpreter(VisualizerMixin):
         self.shape_interpreter = ShapeInterpreter(traced)
         self.shape_interpreter.propagate(input_)
         for node in traced.graph.nodes:
+            if skip_call_function and node.op == 'call_function':
+                continue
             module_name = self.tracer.get_module_name_by_node(node)
             if module_name and name_module_mapping.get(module_name):
                 item = {}
@@ -33,9 +37,15 @@ class Interpreter(VisualizerMixin):
                 num_params = count_module_parameters(current_module)
                 trainable = True if num_params > 0 else False
                 item['name'] = node.name
-                item['dtype'] = node.meta['tensor_meta'].dtype
-                item['shape'] = list(node.meta['tensor_meta'].shape)
                 item['num_params'] = num_params
                 item['trainable'] = trainable
+                tensor_meta = node.meta.get('tensor_meta')
+                # if node.op is `call_function`, do not have tensor meta.
+                if tensor_meta:
+                    item['dtype'] = tensor_meta.dtype
+                    item['shape'] = str(tuple(tensor_meta.shape))
+                else:
+                    item['dtype'] = 'unknown'
+                    item['shape'] = 'unknown'
                 rv.append(item)
-        self.visualizer.plot(module=module, summaries=rv)
+        return rv

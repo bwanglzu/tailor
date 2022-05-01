@@ -3,6 +3,7 @@ from typing import List
 import torch.nn as nn
 from rich.console import Console
 from rich.table import Table
+from torch import Tensor
 
 
 class VisualizerMixin(object):
@@ -12,18 +13,22 @@ class VisualizerMixin(object):
         self._init_table()
 
     def _init_table(self):
-        self._table.add_column('name', justify='right', style='cyan', no_wrap=True)
+        self._table.add_column('name', justify='right', style='cyan1', no_wrap=True)
         self._table.add_column('dtype', style='magenta', justify='right', no_wrap=True)
         self._table.add_column(
-            'num_params', justify='right', style='green', no_wrap=True
+            'num_params', justify='right', style='light_sea_green', no_wrap=True
         )
-        self._table.add_column('shape', justify='right', style='yellow', no_wrap=True)
-        self._table.add_column('trainable', justify='right', style='red', no_wrap=True)
+        self._table.add_column(
+            'shape', justify='right', style='deep_sky_blue2', no_wrap=True
+        )
+        self._table.add_column(
+            'trainable', justify='right', style='green3', no_wrap=True
+        )
 
-    def plot(self, module: nn.Module, summaries: List[dict]):
+    def plot(self, module: nn.Module, input_: Tensor):
         self._table_name = f'Model Structure: {module.__class__.__name__}'
         self._table.title = self._table_name
-        for summary in summaries:
+        for summary in self.interpret(module=module, input_=input_):
             self._table.add_row(
                 summary['name'],
                 str(summary['dtype']),

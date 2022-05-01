@@ -1,5 +1,6 @@
 from typing import Any, Callable, Dict, Optional, Tuple, Union
 
+import torch.fx.proxy
 from torch.fx import Node, Proxy, Tracer
 from torch.fx.node import Target
 from torch.nn import Module, Sequential
@@ -11,7 +12,7 @@ class ModuleNodeTracer(Tracer):
     node_to_originating_module: Dict[Node, str] = {}
     originating_module_to_node: Dict[str, Node] = {}
 
-    def __init__(self, leaf_module=None, *args, **kwargs):
+    def __init__(self, leaf_module: Optional[Module] = None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._leaf_module = leaf_module
 
@@ -25,6 +26,10 @@ class ModuleNodeTracer(Tracer):
         prev_qualified_name = self.current_module_qualified_name
         try:
             self.current_module_qualified_name = self.path_of_module(module)
+            return super().call_module(module, forward, args, kwargs)
+        except torch.fx.proxy.TraceError:
+            # annotate module with control flow as leaf node.
+            module._is_leaf_module = True
             return super().call_module(module, forward, args, kwargs)
         finally:
             self.current_module_qualified_name = prev_qualified_name
@@ -55,7 +60,6 @@ class ModuleNodeTracer(Tracer):
         name: Optional[str] = None,
         type_expr: Optional[Any] = None,
     ) -> Node:
-        # if kind == 'call_module':
         node = super().create_node(kind, target, args, kwargs, name)
         return node
 
