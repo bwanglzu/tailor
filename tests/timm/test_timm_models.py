@@ -3,7 +3,7 @@ import timm
 
 from tailor import Interpreter
 
-models = timm.list_models(exclude_filters=['bat_resnext26ts'])
+models = timm.list_models(exclude_filters=['bat_resnext26ts'])[:30]
 
 
 @pytest.fixture(

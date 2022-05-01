@@ -14,8 +14,16 @@ from .visualizer import VisualizerMixin
 class Interpreter(VisualizerMixin):
     def __init__(self, tracer: Optional[Tracer] = None):
         super().__init__()
-        self.tracer = tracer if tracer else ModuleNodeTracer()
+        self._tracer = tracer if tracer else ModuleNodeTracer()
         self.visualizer = VisualizerMixin()
+        self._graph_module = None
+
+    def trace(self, module: torch.nn.Module) -> GraphModule:
+        if not self._graph_module:
+            self._graph_module = symbolic_trace_with_custom_tracer(
+                root=module, tracer=self._tracer
+            )
+        return self._graph_module
 
     def interpret(
         self,
@@ -26,15 +34,13 @@ class Interpreter(VisualizerMixin):
         rv = []
         input_ = torch.randn(input_shape)
         name_module_mapping = get_named_modules_mapping(module)
-        traced: GraphModule = symbolic_trace_with_custom_tracer(
-            module, tracer=self.tracer
-        )
+        traced = self.trace(module)
         self.shape_interpreter = ShapeInterpreter(traced)
         self.shape_interpreter.propagate(input_)
         for node in traced.graph.nodes:
             if skip_call_function and node.op == 'call_function':
                 continue
-            module_name = self.tracer.get_module_name_by_node(node)
+            module_name = self._tracer.get_module_name_by_node(node)
             if module_name and name_module_mapping.get(module_name):
                 item = {}
                 current_module = name_module_mapping[module_name]
