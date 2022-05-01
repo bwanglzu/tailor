@@ -90,7 +90,7 @@ build-sdist:
 
 # ---------------------------------------------------------------- Test related targets
 
-PYTEST_ARGS = --show-capture no --full-trace --verbose --cov torchinspect/ --cov-report term-missing --cov-report html
+PYTEST_ARGS = --show-capture no --full-trace --verbose --cov tailor/ --cov-report term-missing --cov-report html
 
 ## Run tests
 test:
@@ -98,7 +98,7 @@ test:
 
 # ---------------------------------------------------------- Code style related targets
 
-SRC_CODE = torchinspect/ tests/ setup.py
+SRC_CODE = tailor/ tests/ setup.py
 
 ## Run the flake linter
 flake:
