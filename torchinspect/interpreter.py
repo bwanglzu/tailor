@@ -1,8 +1,7 @@
 from typing import Optional
 
 from torch import Tensor
-from torch.fx import GraphModule  # noqa: F401
-from torch.fx import Tracer
+from torch.fx import GraphModule, Tracer
 from torch.fx.passes.shape_prop import ShapeProp as ShapeInterpreter
 from torch.nn.modules import Module
 

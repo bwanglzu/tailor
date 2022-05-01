@@ -2,7 +2,7 @@ from typing import Any, Callable, Dict, Optional, Tuple, Union
 
 from torch.fx import Node, Proxy, Tracer
 from torch.fx.node import Target
-from torch.nn import Module
+from torch.nn import Module, Sequential
 
 
 class ModuleNodeTracer(Tracer):
@@ -10,6 +10,10 @@ class ModuleNodeTracer(Tracer):
     current_module_qualified_name: str = ''
     node_to_originating_module: Dict[Node, str] = {}
     originating_module_to_node: Dict[str, Node] = {}
+
+    def __init__(self, leaf_module=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._leaf_module = leaf_module
 
     def call_module(
         self,
@@ -60,3 +64,12 @@ class ModuleNodeTracer(Tracer):
 
     def get_node_by_module_name(self, module_name: str):
         return self.originating_module_to_node.get(module_name, None)
+
+    def is_leaf_module(self, m: Module, module_qualified_name: str) -> bool:
+        if self._leaf_module and isinstance(m, self._leaf_module):
+            return True
+
+        if hasattr(m, '_is_leaf_module') and m._is_leaf_module:
+            return True
+
+        return m.__module__.startswith('torch.nn') and not isinstance(m, Sequential)
