@@ -1,6 +1,16 @@
 # Tailor
 
-#### Plot the model structure.
+## Features
+
+1. model visualization
+2. layer freezing
+3. sub-layer re-writing (insert/remove/update) in progress
+4. quantization (in progress)
+5. fully support torchvision/timm (transformers in progress)
+
+Build on top of [torch.fx](https://pytorch.org/docs/stable/fx.html)
+
+## Plot the model structure.
 
 
 ```python
@@ -38,7 +48,7 @@ tailor.plot(input_shape=(1, 3, 224, 224))
 └──────────────┴───────────────┴────────────┴──────────────────┴───────────┘
 ```
 
-#### Freeze Layers
+## Layer Freezing
 
 ```python
 from tailor import Tailor
@@ -76,4 +86,10 @@ tailor.plot(input_shape=(1, 3, 224, 224))
 └──────────────┴───────────────┴────────────┴──────────────────┴───────────┘
 ```
 
-#### Layer Manipulation
+## Sub-Layer Rewriting
+
+in progress
+
+## Quantization
+
+in progress
