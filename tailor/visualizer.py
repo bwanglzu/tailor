@@ -11,7 +11,7 @@ class VisualizerMixin(object):
         self._init_table()
 
     def _init_table(self):
-        self._table.add_column('name', justify='right', style='cyan1', no_wrap=True)
+        self._table.add_column('name', justify='left', style='blue', no_wrap=True)
         self._table.add_column('dtype', style='magenta', justify='right', no_wrap=True)
         self._table.add_column(
             'num_params', justify='right', style='light_sea_green', no_wrap=True
@@ -20,7 +20,7 @@ class VisualizerMixin(object):
             'shape', justify='right', style='deep_sky_blue2', no_wrap=True
         )
         self._table.add_column(
-            'trainable', justify='right', style='green3', no_wrap=True
+            'trainable', justify='right', style='green4', no_wrap=True
         )
 
     def plot(self, input_shape: Union[list, tuple]):
