@@ -11,7 +11,7 @@ class VisualizerMixin(object):
         self._init_table()
 
     def _init_table(self):
-        self._table.add_column('name', justify='right', style='cyan1', no_wrap=True)
+        self._table.add_column('name', justify='left', style='cyan1', no_wrap=True)
         self._table.add_column('dtype', style='magenta', justify='right', no_wrap=True)
         self._table.add_column(
             'num_params', justify='right', style='light_sea_green', no_wrap=True
