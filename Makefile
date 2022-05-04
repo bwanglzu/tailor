@@ -98,7 +98,7 @@ test:
 
 # ---------------------------------------------------------- Code style related targets
 
-SRC_CODE = tailor/ tests/ setup.py
+SRC_CODE = tailor/ tests/
 
 ## Run the flake linter
 flake:
@@ -106,7 +106,7 @@ flake:
 
 ## Run the black formatter
 black:
-	black $(SRC_CODE)
+	black -S $(SRC_CODE)
 
 ## Dry run the black formatter
 black-check:

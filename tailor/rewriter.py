@@ -1,12 +1,13 @@
-import torch
 from torch.fx import GraphModule
+
+from .tracer import ModuleNodeTracer
 
 
 class SublayerRewriter(object):
-    def remove(self, layer: str) -> tuple[GraphModule, bool]:
-        """Remove a specific layer by name."""
-        traced = self.trace()
+    def delete(self, layer: str) -> GraphModule:
+        """Delete a specific layer by name."""
         prev_node = None
+        traced = self.graph_module
         for node in traced.graph.nodes:
             module_name = self._tracer.get_module_name_by_node(node)
             if layer == module_name:
@@ -15,6 +16,6 @@ class SublayerRewriter(object):
                     new_node = prev_node
                     node.replace_all_uses_with(new_node)
                 traced.graph.erase_node(node)
+                break
             prev_node = node
-        traced.recompile()
         return traced
