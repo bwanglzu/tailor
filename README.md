@@ -5,7 +5,7 @@
 
 1. model visualization
 2. layer freezing
-3. sub-layer re-writing (insert/remove/update) in progress
+3. sub-layer re-writing (insert/delete/replace)
 4. quantization (in progress)
 5. fully support torchvision/timm (transformers in progress)
 
@@ -89,27 +89,34 @@ tailor.plot(input_shape=(1, 3, 224, 224))
 
 ## Sub-Layer Rewriting
 
-### Delete a layer
-
 ```python
-from tailor import Tailor
-from torchvision.models import alexnet
+import torch
 from torch.fx import GraphModule
+from torchvision.models import alexnet
+
+from tailor import Tailor
 
 tailor = Tailor(model=alexnet())
 # Remove FC and turn model into feature extractor.
-model: GraphModule = tailor.delete(layer='classifier.6')
+model_without_fc: GraphModule = tailor.delete(layer='classifier.6')
 # After re-writing, please recompile.
-model.recompile()
-
-
-import torch
+model_without_fc.recompile()
 # make sure fc removed and model produce 4096d vector.
-rv = gm(torch.rand(1, 3, 224, 224))
+rv = model_without_fc(torch.rand(1, 3, 224, 224))
 assert rv.size() == (1, 4096)
-```
 
-in progress
+
+# attach a Linear layer at the end of the model.
+# for dimensionality reduction.
+model_128d = tailor.insert(
+    module=torch.nn.Linear(4096, 128),
+    name='classifier.7'
+)
+model_128d.recompile()
+
+rv = model_128d(torch.rand(1, 3, 224, 224))
+assert rv.size() == (1, 128)
+```
 
 ## Quantization
 

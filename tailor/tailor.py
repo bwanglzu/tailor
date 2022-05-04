@@ -8,18 +8,21 @@ from ._symbolic_trace import symbolic_trace_with_custom_tracer
 from .freezer import FreezerMixin
 from .rewriter import SublayerRewriter
 from .tracer import ModuleNodeTracer
-from .utils import (
-    count_module_parameters,
-    get_named_modules_mapping,
-    get_named_parameters_mapping,
-)
+from .utils import (count_module_parameters, get_named_modules_mapping,
+                    get_named_parameters_mapping)
 from .visualizer import VisualizerMixin
 
 
 class Tailor(VisualizerMixin, FreezerMixin, SublayerRewriter):
-    def __init__(self, model: torch.nn.Module, tracer: Optional[Tracer] = None):
+    def __init__(
+        self,
+        model: torch.nn.Module,
+        input_shape: Union[list, tuple],
+        tracer: Optional[Tracer] = None,
+    ):
         super().__init__()
         self._model = model
+        self._input_shape = input_shape
         self._tracer = tracer if tracer else ModuleNodeTracer()
         self.visualizer = VisualizerMixin()
         self._graph_module = None
@@ -34,11 +37,10 @@ class Tailor(VisualizerMixin, FreezerMixin, SublayerRewriter):
 
     def _interpret(
         self,
-        input_shape: Union[list, tuple],
         skip_call_function: bool = True,
     ) -> List[dict]:
         rv = []
-        input_ = torch.randn(input_shape)
+        input_ = torch.randn(self._input_shape)
         name_module_mapping = get_named_modules_mapping(self._model)
         name_params_mapping = get_named_parameters_mapping(self._model)
         self.shape_interpreter = ShapeInterpreter(self.graph_module)
