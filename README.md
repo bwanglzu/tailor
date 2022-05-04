@@ -89,6 +89,26 @@ tailor.plot(input_shape=(1, 3, 224, 224))
 
 ## Sub-Layer Rewriting
 
+### Delete a layer
+
+```python
+from tailor import Tailor
+from torchvision.models import alexnet
+from torch.fx import GraphModule
+
+tailor = Tailor(model=alexnet())
+# Remove FC and turn model into feature extractor.
+model: GraphModule = tailor.delete(layer='classifier.6')
+# After re-writing, please recompile.
+model.recompile()
+
+
+import torch
+# make sure fc removed and model produce 4096d vector.
+rv = gm(torch.rand(1, 3, 224, 224))
+assert rv.size() == (1, 4096)
+```
+
 in progress
 
 ## Quantization
