@@ -1,7 +1,7 @@
 # Tailor
 
 
-## Features
+### Features
 
 1. model visualization
 2. layer freezing
@@ -11,15 +11,15 @@
 
 Build on top of [torch.fx](https://pytorch.org/docs/stable/fx.html)
 
-## Plot the model structure.
+### Plot the model structure.
 
 
 ```python
 from tailor import Tailor
 from torchvision.models import alexnet
 
-tailor = Tailor(model=alexnet())
-tailor.plot(input_shape=(1, 3, 224, 224))
+tailor = Tailor(model=alexnet(), input_shape=(1, 3, 224, 224))
+tailor.plot()
 
                           Model Structure: AlexNet                         
 ┏━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━┓
@@ -49,15 +49,15 @@ tailor.plot(input_shape=(1, 3, 224, 224))
 └──────────────┴───────────────┴────────────┴──────────────────┴───────────┘
 ```
 
-## Layer Freezing
+### Layer Freezing
 
 ```python
 from tailor import Tailor
 from torchvision.models import alexnet
 
-tailor = Tailor(model=alexnet())
+tailor = Tailor(model=alexnet(), input_shape=(1, 3, 224, 224))
 tailor.freeze(from_='classifier.4', to='classifier.6')
-tailor.plot(input_shape=(1, 3, 224, 224))
+tailor.plot()
 
                           Model Structure: AlexNet                          
 ┏━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━┓
@@ -87,7 +87,7 @@ tailor.plot(input_shape=(1, 3, 224, 224))
 └──────────────┴───────────────┴────────────┴──────────────────┴───────────┘
 ```
 
-## Sub-Layer Rewriting
+### Sub-Layer Rewriting
 
 ```python
 import torch
@@ -96,7 +96,7 @@ from torchvision.models import alexnet
 
 from tailor import Tailor
 
-tailor = Tailor(model=alexnet())
+tailor = Tailor(model=alexnet(), input_shape=(1, 3, 224, 224))
 # Remove FC and turn model into feature extractor.
 model_without_fc: GraphModule = tailor.delete(layer='classifier.6')
 # After re-writing, please recompile.
@@ -118,7 +118,7 @@ rv = model_128d(torch.rand(1, 3, 224, 224))
 assert rv.size() == (1, 128)
 ```
 
-## Quantization
+### Quantization
 
 in progress
 
