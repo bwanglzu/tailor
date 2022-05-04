@@ -14,28 +14,38 @@ from .visualizer import VisualizerMixin
 
 
 class Tailor(VisualizerMixin, FreezerMixin, SublayerRewriter):
-    def __init__(self, model: torch.nn.Module, tracer: Optional[Tracer] = None):
+    def __init__(
+        self,
+        model: torch.nn.Module,
+        input_shape: Union[list, tuple],
+        tracer: Optional[Tracer] = None,
+    ):
         super().__init__()
         self._model = model
+        self._input_shape = input_shape
         self._tracer = tracer if tracer else ModuleNodeTracer()
         self.visualizer = VisualizerMixin()
+        self._graph_module = None
 
-    def trace(self) -> GraphModule:
-        return symbolic_trace_with_custom_tracer(root=self._model, tracer=self._tracer)
+    def _trace(self, force=False):
+        if self._graph_module and not force:
+            return self._graph_module
+        self._graph_module = symbolic_trace_with_custom_tracer(
+            root=self._model, tracer=self._tracer
+        )
+        return self._graph_module
 
     def _interpret(
         self,
-        input_shape: Union[list, tuple],
         skip_call_function: bool = True,
     ) -> List[dict]:
         rv = []
-        input_ = torch.randn(input_shape)
+        input_ = torch.randn(self._input_shape)
         name_module_mapping = get_named_modules_mapping(self._model)
         name_params_mapping = get_named_parameters_mapping(self._model)
-        traced = self.trace()
-        self.shape_interpreter = ShapeInterpreter(traced)
+        self.shape_interpreter = ShapeInterpreter(self.graph_module)
         self.shape_interpreter.propagate(input_)
-        for node in traced.graph.nodes:
+        for node in self.graph_module.graph.nodes:
             if skip_call_function and node.op == 'call_function':
                 continue
             module_name = self._tracer.get_module_name_by_node(node)
@@ -69,5 +79,9 @@ class Tailor(VisualizerMixin, FreezerMixin, SublayerRewriter):
         return rv
 
     @property
-    def model(self):
+    def model(self) -> torch.nn.Module:
         return self._model
+
+    @property
+    def graph_module(self) -> GraphModule:
+        return self._trace()
