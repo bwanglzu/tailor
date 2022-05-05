@@ -110,7 +110,7 @@ assert rv.size() == (1, 4096)
 # for dimensionality reduction.
 model_128d = tailor.insert(
     module=torch.nn.Linear(4096, 128),
-    name='classifier.7'
+    name='projection.head'
 )
 model_128d.recompile()
 

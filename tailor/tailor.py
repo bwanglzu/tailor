@@ -24,7 +24,6 @@ class Tailor(VisualizerMixin, FreezerMixin, SublayerRewriter):
         self._model = model
         self._input_shape = input_shape
         self._tracer = tracer if tracer else ModuleNodeTracer()
-        self.visualizer = VisualizerMixin()
         self._graph_module = None
 
     def _trace(self, force=False):
